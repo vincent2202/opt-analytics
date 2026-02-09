@@ -45,6 +45,7 @@ db.sqlite3
 db.sqlite3-journal
 /staticfiles/
 /media/
+/postgres_data/
 local_settings.py
 
 # ───────────────────────────────────────────────────────────
