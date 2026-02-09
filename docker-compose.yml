@@ -5,13 +5,12 @@ services:
       dockerfile: Dockerfile
     command: >
       sh -c "python manage.py collectstatic --noinput &&
-             gunicorn django_project.wsgi:application --bind 0.0.0.0:8000"
+             gunicorn django_project.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     volumes:
-      - .:/app
-      - analytics_static:/app/staticfiles
-      - analytics_logs:/app/logs
+      - ./staticfiles:/app/staticfiles  # BIND MOUNT to host
+      - ./logs:/app/logs                # BIND MOUNT to host
     ports:
-      - "8000:8000"
+      - "8002:8000"
     env_file:
       - .env
     depends_on:
@@ -27,7 +26,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data_analytics:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data  # BIND MOUNT to host
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -41,8 +40,3 @@ services:
 networks:
   analytics_network:
     driver: bridge
-
-volumes:
-  postgres_data_analytics:
-  analytics_static:
-  analytics_logs:
