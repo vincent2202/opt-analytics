@@ -1,0 +1,48 @@
+services:
+  analytics_web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             gunicorn django_project.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - analytics_static:/app/staticfiles
+      - analytics_logs:/app/logs
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - analytics_db
+    container_name: analytics_django_web
+    networks:
+      - analytics_network
+    restart: unless-stopped
+
+  analytics_db:
+    image: postgres:17
+    container_name: analytics_django_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_analytics:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      analytics_network:
+        aliases:
+          - analytics_db
+    restart: unless-stopped
+
+networks:
+  analytics_network:
+    driver: bridge
+
+volumes:
+  postgres_data_analytics:
+  analytics_static:
+  analytics_logs:
